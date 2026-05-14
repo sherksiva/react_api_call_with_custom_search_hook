@@ -6,26 +6,30 @@
  * Ticket : 1, 2
 */
 
-import { useState, useEffect } from 'react'
-import CustomSearch from './CustomSearch'
+import { useState, useEffect } from 'react';
+import CustomSearch from './CustomSearch';
+import AdvancedFilter from './AdvancedFilter';
+import Game from './TicTocTic';
 import './App.css'
 
 function App() {
 
+  //For Search Component
   const [originalData, setOringinalData] = useState([]);
   const [searchInput, setSearchInput] = useState("");
 
+  // For ToDo List
   const [toDoValue, setToDoValue] = useState("");
   const [toDos, setToDos] = useState([]);
   const [tempid, setTempid] = useState(0);
 
   const { customFilter, customPush, customData} = CustomSearch();
-  // let id = 0;
+
   // Get Api Funnction
   const getApiData = async()=> {
 
     try {
-      const getApi = await fetch('https://jsonplaceholder.typicode.com/posts');
+      const getApi = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=10');
 
       const response = await getApi.json();
 
@@ -47,21 +51,15 @@ function App() {
 
   // ToDo submit
   const submitFormData = (event) => {
-    // console.log(event, "Event")
     setTempid(tempid + 1);
-    // event.preventDefault();
     let data = [{text: toDoValue, tempid, status: false}];
-    console.log(toDos, "Data")
-    setToDos([...toDos, ...data], ()=>{
-      console.log(toDos, "ToDos")
-    });
+    setToDos([...toDos, ...data]);
     setToDoValue("");
     event.preventDefault();
   }
 
   const deleteList = (tempIds) => {
     let filteredData = toDos.filter((data) => data.tempid != tempIds);
-    console.log(filteredData, "Filtered Data");
     setToDos(filteredData);
   }
 
@@ -72,12 +70,10 @@ function App() {
       tempData[index].status = true;
 
       setToDos(tempData);
-      alert("Welcome to Edit");
      }
-    // let editData = toDos.filter((data) => data.tempid == tempIds);
-    // console.log(editData, "Edit Data");
   };
 
+  // Save List
   const savelist = (data, index) => {
 
     let tempData = [...toDos];  
@@ -93,6 +89,7 @@ function App() {
   const clearAction = () => {
     setSearchInput("");
   }
+
   //Component inital Effect
   useEffect(()=> {
 
@@ -113,9 +110,9 @@ function App() {
     <>
     {/* Search Main Component */}
       <section id="center">
-        <h5>Custom Search with Http Api Request</h5>
+        <h5>Custom Search</h5>
         <br/>
-        <input type="text" value={searchInput} onChange={(e)=>setSearchInput(e.target.value)} />
+        <input name="SearchInput" type="text" value={searchInput} onChange={(e)=>setSearchInput(e.target.value)} />
         <button onClick={()=>clearAction()} >Clear</button>
         {
           customData && customData.length > 0 && 
@@ -151,10 +148,39 @@ function App() {
           <ul>
             {toDos.map((data, index)=> 
             <li key={index}>
-              <div>{ !data.status ? <span>{data.text}</span> : <input type="text" value={data.text} onChange={(e)=>{ let tempData = [...toDos]; tempData[index].text = e.target.value; setToDos(tempData); }} />} <span>{!data.status ? <button onClick={()=>editList(data,index)}>Edit</button> : <button onClick={()=>savelist(data,index)}>save</button>}<button onClick={()=>deleteList(data.tempid)}>Delete</button></span></div>
-              </li>)}
+              <div>
+                { 
+                !data.status ? 
+                <div>{data.text}</div> : <div><input type="text" name="ToDoInput" value={data.text} onChange={(e)=>{ let tempData = [...toDos]; tempData[index].text = e.target.value; setToDos(tempData); }} /></div> }
+
+                <div>{!data.status ? <button onClick={()=>editList(data,index)}>Edit</button> : <button onClick={()=>savelist(data,index)}>save</button>}
+                  <button onClick={()=>deleteList(data.tempid)}>Delete</button>
+                </div>
+              </div>
+            </li>)}
           </ul>
         }
+      </section>
+      <section id="center" className="secton_top">
+        <h5>Advance Filter</h5>
+        <AdvancedFilter />
+      </section>
+      <section id="center" className="secton_top">
+        <h5>Tic Tac Toe</h5>
+        <Game />
+      </section>
+      {/* Pretty Print Section */}
+      <section id="pretty_print">
+        {/* Custom Search Print Section */}
+        <h5 className="pretty_header">Custom Search</h5>
+        <div className="pretty_column">
+          <pre>{JSON.stringify(customData, null, 2)}</pre>
+        </div>
+        {/* To Do Print Section */}
+        <h5 className="pretty_header">To Do</h5>
+        <div className="pretty_column">
+          <pre>{JSON.stringify(toDos, null, 2)}</pre>
+        </div>
       </section>
     </>
   )
